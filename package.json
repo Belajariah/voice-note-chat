@@ -7,22 +7,40 @@
     "ios": "react-native run-ios",
     "start": "react-native start",
     "test": "jest",
-    "lint": "eslint ."
+    "lint": "eslint --fix --ext .js src App.js"
   },
   "dependencies": {
+    "buffer": "^6.0.3",
     "react": "16.13.1",
     "react-native": "0.63.4",
-    "react-native-audio-recorder-player": "^2.6.0-rc3"
+    "react-native-audio-record": "^0.2.2",
+    "react-native-permissions": "^3.0.0",
+    "react-native-sound": "^0.11.0",
+    "babel-eslint": "10.0.1",
+    "eslint": "6.5.1",
+    "eslint-config-airbnb": "18.0.1",
+    "eslint-loader": "3.0.2",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jsx-a11y": "6.2.3",
+    "eslint-plugin-react": "7.16.0",
+    "eslint-plugin-react-native": "^3.8.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.13.8",
-    "@babel/runtime": "^7.13.9",
+    "@babel/core": "^7.6.2",
+    "@babel/runtime": "^7.6.2",
     "@react-native-community/eslint-config": "^2.0.0",
-    "babel-jest": "^26.6.3",
-    "eslint": "^7.21.0",
+    "@testing-library/jest-native": "^3.4.3",
+    "@types/jest": "^26.0.20",
+    "babel-eslint": "10.0.1",
+    "babel-jest": "24.9.0",
+    "babel-plugin-module-resolver": "3.2.0",
+    "babel-plugin-transform-remove-console": "6.9.4",
+    "eslint": "^7.18.0",
     "jest": "^26.6.3",
-    "metro-react-native-babel-preset": "^0.65.2",
-    "react-test-renderer": "16.13.1"
+    "metro-react-native-babel-preset": "0.56.0",
+    "react-native-dotenv": "^0.2.0",
+    "react-test-renderer": "16.13.1",
+    "reactotron-react-native": "^4.0.2"
   },
   "jest": {
     "preset": "react-native"
