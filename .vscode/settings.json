@@ -1,0 +1,7 @@
+{
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "javascript.format.insertSpaceBeforeFunctionParenthesis": true,
+    "editor.tabSize": 2,
+    "editor.autoIndent": "keep",
+    "editor.formatOnSave": true
+}
