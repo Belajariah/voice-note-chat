@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     paddingHorizontal: 5
   },
-   txtSendMail: {
+  txtSendMail: {
     fontSize: 14,
     color: '#fff',
     fontWeight: 'bold'
@@ -117,60 +117,59 @@ const App = () => {
   const [musicStop, setMusicStop] = useState(false)
   const [musicUrl, setMusicUrl] = useState('')
 
-  const checkPermission = async () => {
-    // PERMISSIONS EXTERNAL STORAGE
-    if (Platform.OS === 'android') {
-      try {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-          {
-            title: 'Permissions for write access',
-            message: 'Apps need permissions to storage',
-            buttonPositive: 'ok'
-          },
-        )
-        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-          console.log('You can use the storage')
-        } else {
-          console.log('permission denied')
-          return
-        }
-      } catch (err) {
-        console.warn(err)
-        return
+  // REQUEST STORAGE PERMISSIONS
+  const requestWriteStoragePermission = async () => {
+    try {
+      if (Platform.OS === 'ios') {
+        return true
       }
-    }
-    // PERMISSIONS RECORD AUDIO
-    if (Platform.OS === 'android') {
-      try {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-          {
-            title: 'Permissions for write access',
-            message: 'Apps need permission to audio',
-            buttonPositive: 'ok'
-          },
-        )
-        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-          console.log('You can use the audio')
-        } else {
-          console.log('permission denied')
-          return
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        {
+          title: 'Storage Access',
+          message: 'App need access to storage'
         }
-      } catch (err) {
-        console.warn(err)
+      )
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        return true
       }
+      return false
+    } catch (err) {
+      console.warn(err)
     }
   }
 
-  useEffect(() => {
-    checkPermission() // Need Permissions checking
-    let sound = null // sound store for local play
-    let music = null // music store for online play
+  // REQUEST AUDIO PERMISSIONS
+  const requestAudioPermission = async () => {
+    try {
+      if (Platform.OS === 'ios') {
+        return true
+      }
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+        {
+          title: 'Audio Access',
+          message: 'App need access to audio'
+        }
+      )
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        return true
+      }
+      return false
+    } catch (err) {
+      console.warn(err)
+    }
+  }
+
+  const askPermissionsAsync = async () => {
+    // Warning: AudioRecord must be declare after Permissions.
+    await requestAudioPermission()
+    await requestWriteStoragePermission()
     const options = {
       sampleRate: 16000,
       channels: 1,
       bitsPerSample: 16,
+      audioSource: 6,
       wavFile: 'test.wav'
     }
     AudioRecord.init(options)
@@ -181,8 +180,14 @@ const App = () => {
       // console.log('chunk size', chunk.byteLength)
       // do something with audio chunk
     })
-    sound
-    music
+  }
+
+  useEffect(() => {
+    askPermissionsAsync()
+    let sound = null // sound store for local play
+    let music = null // music store for online play
+    sound // this.sound()
+    music // this.music()
   }, [])
 
   // FUNCTION LOCAL PLAY
@@ -287,47 +292,47 @@ const App = () => {
     <View style={styles.container}>
       <ScrollView>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'position'}>
-        <View style={styles.wrapInfoDate}>
-          <Text style={styles.infoDate}>{`Current: ${new Date()}`}</Text>
-        </View>
+          <View style={styles.wrapInfoDate}>
+            <Text style={styles.infoDate}>{`Current: ${new Date()}`}</Text>
+          </View>
 
-        <View style={styles.groupComponent}>
-          <Text style={styles.title}>Record and Play Feature.</Text>
-          <View style={styles.row}>
-            <Button
-              onPress={start}
-              title="Record"
-              disabled={recording}
-            />
-            <Button
-              onPress={stop}
-              title="Stop"
-              disabled={!recording}
-            />
-          </View>
-          <View style={styles.wrapperNav}>
-            <View style={styles.leftSide}>
-              <Text style={styles.txtAudioFilePath}>
-                {audioFile.length > 0 ? audioFile : 'No file recorded yet !'}
-              </Text>
+          <View style={styles.groupComponent}>
+            <Text style={styles.title}>Record and Play Feature.</Text>
+            <View style={styles.row}>
+              <Button
+                onPress={start}
+                title="Record"
+                disabled={recording}
+              />
+              <Button
+                onPress={stop}
+                title="Stop"
+                disabled={!recording}
+              />
             </View>
-            <View style={styles.rightSide}>
-              {paused ? (
-                <Button
-                  onPress={play}
-                  title="Play"
-                  disabled={!(audioFile.length > 0)}
-                />
-              ) : (
-                <Button
-                  onPress={pause}
-                  title="Pause"
-                  disabled={!audioFile}
-                />
-              )}
+            <View style={styles.wrapperNav}>
+              <View style={styles.leftSide}>
+                <Text style={styles.txtAudioFilePath}>
+                  {audioFile.length > 0 ? audioFile : 'No file recorded yet !'}
+                </Text>
+              </View>
+              <View style={styles.rightSide}>
+                {paused ? (
+                  <Button
+                    onPress={play}
+                    title="Play"
+                    disabled={!(audioFile.length > 0)}
+                  />
+                ) : (
+                  <Button
+                    onPress={pause}
+                    title="Pause"
+                    disabled={!audioFile}
+                  />
+                )}
+              </View>
             </View>
           </View>
-        </View>
 
           <View style={styles.groupComponent}>
             <Text style={styles.title}>Play By Url Feature.</Text>
