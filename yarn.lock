@@ -6172,6 +6172,11 @@ react-native-permissions@^3.0.0:
   resolved "https://registry.yarnpkg.com/react-native-permissions/-/react-native-permissions-3.0.1.tgz#7273f7d07701974ef50bf77bb052881846a3bb91"
   integrity sha512-loCoNEeBeLsrvITZmrkuCUEMFiuwhKuFvkWbC5Imco4bj2hUW7BVI29i8QyxkC53ydRfSR9OtbR3KQIyghWiNQ==
 
+react-native-restart@^0.0.12:
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/react-native-restart/-/react-native-restart-0.0.12.tgz#afd51c445bdadfd34a02e29955eefe66a86af86d"
+  integrity sha512-aSvcsiSLUbHt1E0AXuC2gpIXBTn1p3J4jfTYFbFv/D19zTLW5WVUb4blgVt70RCkqvZWD3NEymS4ZZmFWGDclA==
+
 react-native-sound@^0.11.0:
   version "0.11.0"
   resolved "https://registry.yarnpkg.com/react-native-sound/-/react-native-sound-0.11.0.tgz#ad60b55ba8c6dc89917f381ad3713f2738de530f"
