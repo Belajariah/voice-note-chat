@@ -10,6 +10,10 @@
     "lint": "eslint --fix --ext .js src App.js"
   },
   "dependencies": {
+    "@react-navigation/bottom-tabs": "^5.11.8",
+    "@react-navigation/material-top-tabs": "^5.3.14",
+    "@react-navigation/native": "^5.9.3",
+    "@react-navigation/stack": "^5.14.3",
     "babel-eslint": "10.0.1",
     "buffer": "^6.0.3",
     "eslint": "6.5.1",
@@ -19,12 +23,15 @@
     "eslint-plugin-jsx-a11y": "6.2.3",
     "eslint-plugin-react": "7.16.0",
     "eslint-plugin-react-native": "^3.8.1",
+    "formik": "^2.2.6",
     "react": "16.13.1",
     "react-native": "0.63.4",
     "react-native-audio-record": "^0.2.2",
+    "react-native-email": "^1.1.0",
+    "react-native-gesture-handler": "^1.10.3",
     "react-native-permissions": "^3.0.0",
-    "react-native-sound": "^0.11.0",
-    "react-native-email": "^1.1.0"
+    "react-native-safe-area-context": "^3.2.0",
+    "react-native-sound": "^0.11.0"
   },
   "devDependencies": {
     "@babel/core": "^7.6.2",
