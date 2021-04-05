@@ -8,6 +8,12 @@ target 'RNVoiceApp' do
 
   use_react_native!(:path => config["reactNativePath"])
 
+  pod 'RNAudioRecorderPlayer', :path => '../node_modules/react-native-audio-recorder-player'
+
+  pod 'react-native-track-player', :path => '../node_modules/react-native-track-player'
+
+  pod 'react-native-slider', :path => '../node_modules/@react-native-community/slider'
+
   target 'RNVoiceAppTests' do
     inherit! :complete
     # Pods for testing
