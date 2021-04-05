@@ -1,432 +1,312 @@
-import PropTypes from 'prop-types'
-import {  useFormik } from 'formik'
-import Sound from 'react-native-sound'
-import AudioRecord from 'react-native-audio-record'
 import React, { useState, useEffect } from 'react'
 import {
   View,
   Text,
-  Button,
-  FlatList,
+  StyleSheet,
   TextInput,
   TouchableOpacity,
+  ToastAndroid,
 } from 'react-native'
+import AudioRecorderPlayer from 'react-native-audio-recorder-player'
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 
-import {
-  TimerObj,
-  TimeConvert,
-  AskPermissionsRecording,
-} from './utils'
+import Header from './app/components/Header'
+import Messages from './app/components/Messages'
+import Screen from './app/components/Screen'
+import messages from './app/data/messages'
+import colors from './app/utils/colors'
 
-import { styles } from './App-style'
+const audioRecorderPlayer = new AudioRecorderPlayer()
 
 const App = () => {
-  const [play, setPlay] = useState(false)
-  const [minutes, setMinutes] = useState(0)
-  const [seconds, setSeconds] =  useState(0)
-  const [record, setRecord] = useState(false)
-  const [message, setMessage] = useState(false)
-  const [audioFile, setAudioFile] = useState('')
-  const [msgSelected, setMsgSelected] = useState([])
-  const [optionSelected, setOptionSelected] = useState({})
+  const [data, setData] = useState(messages)
+  const [text, setText] = useState('')
+  const [audio, setAudio] = useState('')
+  const [audioDuration, setAudioDuration] = useState('')
+  const [recordTime, setRecordTime] = useState('')
+  const [playTime, setPlayTime] = useState('')
+  const [duration, setDuration] = useState('0')
+  const [isPlaying, setIsPlaying] = useState(false)
 
-  const voiceDuration =  (480 - ((minutes*60) + seconds))
-  const setInput = (v, e) => FormSendMessage.setFieldValue(v, e)
-
-  const user_login = 1
-  const state = [
-    { id : 1, user_code : 1, username : 'Rico Wijaya', voice_code : 1, voice_duration : 122, taken_id : 2, taken_by : 'Ust. Riki Jenifer', class_catgory : 'Tahsin', status : 'Completed', is_play : false, is_read : true, is_action_taken : true, created_date: new Date(), message : 'ustadz mau tanya dong seputar tajwid', Recording_Name : 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
-    { id : 2, user_code : 2, username : 'Ust. Riki Jenifer', voice_code : 2, voice_duration : 60, taken_id : 1, taken_by : 'Ust. Riki Jenifer', class_catgory : 'Tahsin', status : 'Completed', is_play : false, is_read : true, is_action_taken : true, created_date: new Date(), message : 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat',  Recording_Name : '' },
-    { id : 3, user_code : 1, username : 'Rico Wijaya', voice_code : 3, voice_duration : 146, taken_id : 2, taken_by : 'Ust. Riki Jenifer', class_catgory : 'Tahsin', status : 'Completed', is_play : false, is_read : true, is_action_taken : true, created_date: new Date(), message : 'ustadz mau tanya dong seputar tajwid',  Recording_Name : 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
-    { id : 4, user_code : 2, username : 'Ust. Riki Jenifer', voice_code : 4, voice_duration : 80, taken_id : 1, taken_by : 'Ust. Riki Jenifer', class_catgory : 'Tahsin', status : 'Completed', is_play : false, is_read : true, is_action_taken : true, message : 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat',  Recording_Name : '' },
-    { id : 5, user_code : 1, username : 'Rico Wijaya', voice_code : 3, voice_duration : 152, taken_id : 2, taken_by : 'Ust. Riki Jenifer', class_catgory : 'Tahsin', status : 'Waiting for Response', is_play : false, is_read : false, is_action_taken : false, created_date: new Date(), message : 'ustadz mau tanya dong seputar tajwid',  Recording_Name : '' },
-    { id : 6, user_code : 1, username : 'Rico Wijaya', voice_code : 3, voice_duration : 189, taken_id : 2, taken_by : 'Ust. Riki Jenifer', class_catgory : 'Tahsin', status : 'Waiting for Response', is_play : false, is_read : false, is_action_taken : false, created_date: new Date(), message : 'ustadz mau tanya dong seputar tajwid',  Recording_Name : 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
-  ]
-
-  const FormSendMessage = useFormik({
-    initialValues: {
-      User_Code : user_login.ID,
-      Recording_Code : 0,
-      Recording_Duration : 0,
-      Description : '',
-      Taken_Code : 0,
-    },
-    onSubmit: async (values, form) => {
-      form.setSubmitting(false)
-      form.resetForm()
-      setMessage(false)
-      setAudioFile([])
-      setRecord(false)
-      setPlay(false)
-    },
-  })
+  const [showSendButton, setShowSendButton] = useState(false)
+  const [showRecording, setShowRecording] = useState(false)
+  const [showHandleAudio, setShowHandleAudio] = useState(false)
+  const [showPlayTimeAndDuration, setShowPlayTimeAndDuration] = useState(false)
 
   useEffect(() => {
-    let sound = null
-    let music = null
-    sound
-    music
-  }, [])
+    if (playTime == duration) {
+      setIsPlaying(false)
 
-  const StartRecord = () => {
-    AudioRecord.start()
-  }
+      audioRecorderPlayer.stopPlayer()
+      audioRecorderPlayer.removePlayBackListener()
+    }
+  }, [playTime, duration])
 
-  const PauseRecord = () => {
-    sound.pause()
-  }
+  const onStartRecord = async () => {
+    setShowRecording(true)
 
-  const StartPathRecord = (musicUrl) => {
-    console.log(musicUrl)
-    music = new Sound(musicUrl, Sound.MAIN_BUNDLE, (e) => {
-      if (e) {
-        console.log('error loading track:', e)
-      } else {
-        music.play()
-      }
+    await audioRecorderPlayer.startRecorder()
+
+    audioRecorderPlayer.addRecordBackListener((e) => {
+      const time = audioRecorderPlayer
+        .mmssss(Math.floor(e.current_position))
+        .toString()
+        .substr(0, 5)
+
+      setRecordTime(time)
     })
   }
 
-  const StopPathRecord = () => {
-    music.stop()
+  const onStopRecord = async () => {
+    await audioRecorderPlayer.addRecordBackListener((e) => {
+      let duration = e.current_position.toString()
+      duration = duration.substr(0, duration.length - 3)
+      setAudioDuration(duration)
+    })
+
+    const result = await audioRecorderPlayer.stopRecorder()
+
+    audioRecorderPlayer.removeRecordBackListener()
+
+    setAudio(result)
   }
 
-  const loadRecord = () => {
-    return new Promise((resolve, reject) => {
-      if (!audioFile) {
-        const reason = 'File path is empty !'
-        return reject(reason)
-      }
-      else {
-        console.log('ok', audioFile)
-        sound = new Sound(audioFile, '', error => {
-          if (error) {
-            console.log('failed to load the file', error)
-            return reject(error)
-          }
-          return resolve()
-        })
-      }
+  const onStartPlay = async () => {
+    await audioRecorderPlayer.startPlayer()
+
+    audioRecorderPlayer.addPlayBackListener((e) => {
+      const position = audioRecorderPlayer
+        .mmssss(Math.floor(e.current_position))
+        .toString()
+        .substr(0, 5)
+      const duration = audioRecorderPlayer
+        .mmssss(Math.floor(e.duration))
+        .toString()
+        .substr(0, 5)
+
+      setPlayTime(position)
+      setDuration(duration)
+
+      return
     })
   }
 
-  const ReplayRecord = async () => {
-    try {
-      await loadRecord()
-    } catch (error) {
-      console.log(error)
-    }
-    Sound.setCategory('Playback')
-    try {
-      sound.play(success => {
-        if (success) {
-          console.log('successfully finished playing')
-        } else {
-          console.log('playback failed due to audio decoding errors')
-        }
-      })
-    } catch (error) {
-      console.log('ERROR =>', error)
-    }
+  const onPausePlay = async () => {
+    await audioRecorderPlayer.pausePlayer()
   }
 
-  const handleCancel = () => {
-    sound.stop()
-    setPlay(false)
-    setAudioFile('')
-    setMessage(false)
-    setMinutes(TimerObj(480-1).minute)
-    setSeconds(TimerObj(480-1).second)
+  const handleSendText = () => {
+    setData((prevData) => [
+      ...prevData,
+      {
+        id: Math.random(),
+        user_code: 1,
+        username: 'Rico Wijaya',
+        voice_code: 3,
+        voice_duration: 0,
+        taken_id: 2,
+        taken_by: 'Ust. Riki Jenifer',
+        class_catgory: 'Tahsin',
+        status: 'Waiting for Response',
+        is_play: false,
+        is_read: false,
+        is_action_taken: false,
+        created_date: new Date(),
+        message: text,
+        Recording_Name: '',
+      },
+    ])
+
+    setText('')
+    setShowSendButton(false)
   }
 
-  const handlePlay = () => {
-    setPlay(!play)
-    setMinutes(TimerObj(FormSendMessage
-      .values['Recording_Duration']).minute)
-    setSeconds(TimerObj(FormSendMessage
-      .values['Recording_Duration']).second)
-    // if (play) {
-    ReplayRecord()
-    // } else {
-    // }
-    //   AskPermissionsRecording,PauseRecord()
-  }
+  const handleSendAudio = () => {
+    if (audio === '' || audio === 'Already stopped')
+      return ToastAndroid.show(
+        'Long press for recording audio!',
+        ToastAndroid.SHORT,
+      )
 
-  const handlePlayList = (item) => {
-    msgSelected.forEach((val, i) => {
-      if (val.id == item.id) {
-        let isPlay = [...msgSelected]
-        isPlay[i] = { ...val, is_play :
-        optionSelected.id == val.id &&
-        optionSelected.is_play  ? false : true
-        }
-        setMinutes(TimerObj(val.voice_duration).minute)
-        setSeconds(TimerObj(val.voice_duration).second)
-        setOptionSelected(isPlay[i])
-      }
-    })
-  }
+    setData((prevData) => [
+      ...prevData,
+      {
+        id: Math.random(),
+        user_code: 1,
+        username: 'Rico Wijaya',
+        voice_code: 3,
+        voice_duration: audioDuration,
+        taken_id: 2,
+        taken_by: 'Ust. Riki Jenifer',
+        class_catgory: 'Tahsin',
+        status: 'Waiting for Response',
+        is_play: false,
+        is_read: false,
+        is_action_taken: false,
+        created_date: new Date(),
+        message: '',
+        Recording_Name: audio,
+      },
+    ])
 
-  const handleSetRecord = async () => {
-    setPlay(false)
-    setRecord(false)
-    setMessage(true)
-    setInput('Recording_Duration', voiceDuration)
-    let audio = await AudioRecord.stop()
-    setAudioFile(audio)
-  }
-
-  const handleRecord = () => {
-    if ( FormSendMessage.values['Description']
-      .length == 0) {
-      setRecord(true)
-      StartRecord()
-    }
-  }
-
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      if (record) {
-        if (seconds > 0) {
-          setSeconds(seconds - 1)
-        }
-        if (seconds === 0) {
-          if (minutes === 0) {
-            setRecord(!record)
-            setMessage(!message)
-            clearInterval(intervalId)
-          } else {
-            setMinutes(minutes - 1)
-            setSeconds(59)
-          }
-        }
-      } else if (play) {
-        if (seconds > 0) {
-          setSeconds(seconds - 1)
-        }
-        if (seconds === 0) {
-          if (minutes === 0) {
-            setPlay(!play)
-            setMinutes(TimerObj(FormSendMessage.values['Recording_Duration']).minute)
-            setSeconds(TimerObj(FormSendMessage.values['Recording_Duration']).second)
-            clearInterval(intervalId)
-          } else {
-            setMinutes(minutes - 1)
-            setSeconds(59)
-          }
-        }
-      } else if (optionSelected.is_play) {
-        if (seconds > 0) {
-          setSeconds(seconds - 1)
-        }
-        if (seconds === 0) {
-          if (minutes === 0) {
-            setOptionSelected({
-              ...optionSelected,
-              is_play : false
-            })
-            clearInterval(intervalId)
-          } else {
-            setMinutes(minutes - 1)
-            setSeconds(59)
-          }
-        }
-      }
-    }, 1000)
-    return () => clearInterval(intervalId)
-  }, [seconds, minutes, record, play, optionSelected])
-
-  useEffect(() => {
-    setMsgSelected(state)
-    setMinutes(TimerObj(480-1).minute)
-    setSeconds(TimerObj(480-1).second)
-    AskPermissionsRecording()
-  }, [])
-
-  const Header = () => {
-    return (
-      <View style={styles.containerHeader}>
-        <View style={styles.flexHeader}>
-          <Text style={styles.textTitleWhite}>Chat</Text>
-        </View>
-        <View style={styles.semiBox} />
-      </View>
-    )
-  }
-
-  const Message = (item, index) => {
-    let icon, iconUser, playRecord
-    optionSelected.is_play &&
-    optionSelected.id == item.id &&
-    user_login != item.user_code ?
-      (icon = 'Pause',
-      playRecord = () => StartPathRecord(item.Recording_Name)) :
-      (icon =  'Play',
-      playRecord = () =>StopPathRecord())
-
-    optionSelected.is_play &&
-    optionSelected.id == item.id &&
-    user_login == item.user_code ?
-      (iconUser =  () => 'Pause',
-      playRecord = StartPathRecord(item.Recording_Name)) :
-      (iconUser =  'Play',
-      playRecord = () => StopPathRecord())
-
-    return (
-      <View
-        key={index}
-        style={[styles.containerChat,
-          user_login == item.user_code ?
-            styles.flexEnd : styles.flexStart]}>
-
-        {user_login == item.user_code ? (
-          <View style={styles.containerSoundStart}>
-            {item.Recording_Name.length != 0 &&(
-              <>
-                <TouchableOpacity
-                  onPress={() => {
-                    handlePlayList(item)
-                    playRecord
-                  }}>
-                  <Button
-                    onPress={() => {
-                      handlePlayList(item)
-                    }}
-                    title={icon}
-                  />
-                </TouchableOpacity>
-                <Text style={[styles.textSoundDuration, styles.textWhite]}>
-                  {optionSelected.is_play && optionSelected.id == item.id ? (
-                    `${minutes}:${seconds < 10 ?
-                      `0${seconds}` : seconds}`
-                  ) : (
-                    TimeConvert(item.voice_duration)
-                  )}
-                </Text>
-              </>
-            )}
-          </View>
-        ) : (
-          <View style={styles.containerSoundEnd}>
-            <View>
-              <Text style={[styles.textDesc, { textAlign : 'right' }]}>
-                {item.username}
-              </Text>
-              {item.Recording_Name.length != 0 && (
-                <View style={styles.flexRow}>
-                  <Button
-                    onPress={() => {
-                      handlePlayList(item)
-                      playRecord
-                    }}
-                    title={iconUser}
-                  />
-                  <Text style={styles.textSoundDuration}>
-                    {optionSelected.is_play && optionSelected.id == item.id ? (
-                      `${minutes}:${seconds < 10 ?
-                        `0${seconds}` : seconds}`
-                    ) : (
-                      TimeConvert(item.voice_duration)
-                    )}
-                  </Text>
-                </View>
-              )}
-            </View>
-          </View>
-        )}
-        <View style={styles.containerUserDesc}>
-          <Text style={[styles.textDesc,
-            user_login == item.user_code && (styles.textPurple)]}>
-            Deskripsi
-          </Text>
-          <Text style={[styles.textUserDesc,
-            user_login == item.user_code && (styles.textWhite)]}>
-            {item.message}
-          </Text>
-        </View>
-      </View>
-    )
-  }
-
-  const VoiceMessage = () => {
-    let icon
-    play ? (icon = 'Pause'):(icon =  'PLay')
-    return message &&(
-      <View style={styles.containerVoice}>
-        <Button
-          onPress={() => handlePlay()}
-          title={icon}
-        />
-        <Text style={styles.textSoundDuration}>
-          {play ? (
-            `${minutes}:${seconds < 10 ?
-              `0${seconds}` : seconds}`
-          ) : (
-            TimeConvert(FormSendMessage.values['Recording_Duration'])
-          )}
-        </Text>
-        <Button
-          onPress={() => handleCancel()}
-          title='Cancel'
-        />
-      </View>
-    )
-  }
-
-  const Footer = () => {
-    let icons, submit
-    FormSendMessage.values['Description'].length > 0 ? (
-      icons = 'Send',
-      submit = () => FormSendMessage.handleSubmit()) :
-      message ? (icons = 'Send',
-      submit = () => FormSendMessage.handleSubmit()) :
-        record ? (icons = 'Ok',
-        submit = () => handleSetRecord()) :
-          (icons = 'Record',
-          submit = () => handleRecord())
-
-    return (
-      <Button
-        title={icons}
-        onPress={submit}
-        styles={styles.containerSend}
-      />
-    )
+    setAudio('')
+    setShowRecording(false)
+    setShowHandleAudio(false)
+    setShowHandleAudio(false)
+    setIsPlaying(false)
+    setPlayTime('')
+    setDuration('')
+    setShowPlayTimeAndDuration(false)
   }
 
   return (
-    <View style={styles.containerMain}>
+    <>
       <Header />
-      <FlatList
-        data={state}
-        style={{ width:'100%' }}
-        showsVerticalScrollIndicator ={false}
-        contentContainerStyle={{ paddingBottom : 50 }}
-        keyExtractor={(item, index) =>  index.toString()}
-        renderItem={({ item, index }) => Message(item, index)}
-      />
-      <VoiceMessage/>
-      <View style={styles.containerTextInput}>
-        <TextInput
-          editable={!record}
-          style={styles.textInput}
-          placeholder='Ketik pesan ...'
-          value={FormSendMessage.values['Description']}
-          onChangeText={(e) => setInput('Description', e)}>
-          {record ? (
-            <Text>
-              {minutes}:{seconds < 10 ? `0${seconds}` : seconds}
-            </Text>
-          ): null}
-        </TextInput>
-        <Footer/>
-      </View>
-    </View>
+      <Screen style={styles.container}>
+        <Messages messages={data} />
+        <View style={styles.message}>
+          <View style={styles.input}>
+            {showRecording ? (
+              <View style={styles.recording}>
+                <View>
+                  <Text>
+                    {showPlayTimeAndDuration
+                      ? `${playTime}/${duration}`
+                      : recordTime}
+                  </Text>
+                </View>
+                {showHandleAudio && (
+                  <View style={styles.recordingContent}>
+                    <TouchableOpacity
+                      style={styles.recordingButton}
+                      onPress={() => {
+                        setIsPlaying(!isPlaying)
+
+                        if (isPlaying) {
+                          onPausePlay()
+                        } else {
+                          onStartPlay()
+                          setShowPlayTimeAndDuration(true)
+                        }
+                      }}>
+                      <Icon
+                        name={isPlaying ? 'pause' : 'play'}
+                        size={30}
+                        color={colors.dark}
+                      />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={styles.recordingButton}
+                      onPress={() => {
+                        onStopRecord()
+                        setShowRecording(false)
+                        setShowHandleAudio(false)
+                        setIsPlaying(false)
+                        setPlayTime('')
+                        setDuration('0')
+                        setShowPlayTimeAndDuration(false)
+                      }}>
+                      <Icon name='close-circle' size={30} color={colors.dark} />
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+            ) : (
+              <TextInput
+                style={styles.textInput}
+                multiline
+                onChangeText={(e) => {
+                  if (e.length > 0) {
+                    setShowSendButton(true)
+                    setText(e)
+                  } else {
+                    setShowSendButton(false)
+                    setText(e)
+                  }
+                }}
+                value={text}
+              />
+            )}
+          </View>
+          <View style={styles.buttons}>
+            {showSendButton ? (
+              <TouchableOpacity style={styles.button} onPress={handleSendText}>
+                <Icon name='send' size={25} color={colors.white} />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                onPress={handleSendAudio}
+                onLongPress={() => {
+                  onStartRecord()
+                  setShowHandleAudio(false)
+                  setIsPlaying(false)
+                  setPlayTime('')
+                  setDuration('')
+                  setShowPlayTimeAndDuration(false)
+                }}
+                onPressOut={() => {
+                  onStopRecord()
+                  setShowHandleAudio(true)
+                }}
+                style={styles.button}>
+                <Icon name='microphone' size={25} color={colors.white} />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      </Screen>
+    </>
   )
 }
 
-App.propTypes = {
-  route : PropTypes.object
-}
+const styles = StyleSheet.create({
+  container: {
+    paddingBottom: 60,
+  },
+  message: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    backgroundColor: colors.light,
+    width: '100%',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  input: {
+    flex: 1,
+  },
+  textInput: {
+    borderColor: colors.primary,
+    borderWidth: 1,
+    borderRadius: 40,
+    minHeight: 20,
+    paddingHorizontal: 20,
+  },
+  buttons: {
+    marginLeft: 10,
+  },
+  button: {
+    backgroundColor: colors.primary,
+    padding: 10,
+    borderRadius: 30,
+  },
+  buttonText: {
+    color: colors.white,
+  },
+  recording: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  recordingButton: {
+    marginHorizontal: 10,
+  },
+  recordingContent: {
+    flexDirection: 'row',
+  },
+})
 
 export default App
