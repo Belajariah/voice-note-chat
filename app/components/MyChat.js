@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import TrackPlayer, {
   TrackPlayerEvents,
   STATE_PLAYING,
@@ -15,42 +15,45 @@ import colors from '../utils/colors'
 import secondsToTime from '../utils/secondsToTime'
 
 const MyChat = ({ item }) => {
-  // const [isTrackPlayerInit, setIsTrackPlayerInit] = useState(false)
+  const [isTrackPlayerInit, setIsTrackPlayerInit] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [sliderValue, setSliderValue] = useState(0)
   const [isSeeking, setIsSeeking] = useState(false)
   const { position, duration } = useTrackPlayerProgress(250)
 
-  // const trackPlayerInit = async () => {
-  //   await TrackPlayer.setupPlayer()
-  //   TrackPlayer.updateOptions({
-  //     stopWithApp: true,
-  //     capabilities: [
-  //       TrackPlayer.CAPABILITY_PLAY,
-  //       TrackPlayer.CAPABILITY_PAUSE,
-  //       TrackPlayer.CAPABILITY_JUMP_FORWARD,
-  //       TrackPlayer.CAPABILITY_JUMP_BACKWARD,
-  //     ],
-  //   })
-  //   await TrackPlayer.add({
-  //     // id: songDetails.id,
-  //     url: item.Recording_Name,
-  //     type: 'default',
-  //     // title: songDetails.title,
-  //     // album: songDetails.album,
-  //     // artist: songDetails.artist,
-  //     // artwork: songDetails.artwork,
-  //   })
-  //   return true
-  // }
+  const trackPlayerInit = async () => {
+    await TrackPlayer.setupPlayer()
+    TrackPlayer.updateOptions({
+      stopWithApp: true,
+      capabilities: [
+        TrackPlayer.CAPABILITY_PLAY,
+        TrackPlayer.CAPABILITY_PAUSE,
+        TrackPlayer.CAPABILITY_JUMP_FORWARD,
+        TrackPlayer.CAPABILITY_JUMP_BACKWARD,
+      ],
+    })
+    await TrackPlayer.add({
+      id: item.id,
+      url: item.Recording_Name,
+      type: 'default',
+      // title: songDetails.title,
+      // album: songDetails.album,
+      // artist: songDetails.artist,
+      // artwork: songDetails.artwork,
+    })
+    return true
+  }
 
-  // useEffect(() => {
-  //   const startPlayer = async () => {
-  //     let isInit = await trackPlayerInit()
-  //     setIsTrackPlayerInit(isInit)
-  //   }
-  //   startPlayer()
-  // }, [])
+  const startPlayer = async () => {
+    let isInit = await trackPlayerInit()
+    setIsTrackPlayerInit(isInit)
+  }
+
+  useEffect(() => {
+    if (item.Recording_Name !== '') {
+      startPlayer()
+    }
+  }, [])
 
   useEffect(() => {
     if (!isSeeking && position && duration) {
@@ -66,33 +69,11 @@ const MyChat = ({ item }) => {
     }
   })
 
-  const onButtonPressed = async (url) => {
+  const onButtonPressed = () => {
     if (!isPlaying) {
-      await TrackPlayer.setupPlayer()
-      TrackPlayer.updateOptions({
-        stopWithApp: true,
-        capabilities: [
-          TrackPlayer.CAPABILITY_PLAY,
-          TrackPlayer.CAPABILITY_PAUSE,
-          TrackPlayer.CAPABILITY_JUMP_FORWARD,
-          TrackPlayer.CAPABILITY_JUMP_BACKWARD,
-        ],
-      })
-      await TrackPlayer.add({
-        // id: songDetails.id,
-        url,
-        type: 'default',
-        // title: songDetails.title,
-        // album: songDetails.album,
-        // artist: songDetails.artist,
-        // artwork: songDetails.artwork,
-      })
-
       TrackPlayer.play()
-      setIsPlaying(true)
     } else {
       TrackPlayer.pause()
-      setIsPlaying(false)
     }
   }
 
@@ -114,27 +95,31 @@ const MyChat = ({ item }) => {
 
       {item.Recording_Name !== '' ? (
         <View style={styles.soundContainer}>
-          <Icon
-            name={isPlaying ? 'pause' : 'play'}
-            size={20}
-            color={colors.medium}
+          <TouchableOpacity
             onPress={() => onButtonPressed(item.Recording_Name)}
-            style={styles.icon}
-          />
+            disabled={!isTrackPlayerInit}>
+            <Icon
+              name={isPlaying ? 'pause' : 'play'}
+              size={20}
+              color={colors.primary}
+            />
+          </TouchableOpacity>
           <View style={styles.music}>
             <Slider
               style={{ width: 200 }}
               minimumValue={0}
               maximumValue={1}
               value={sliderValue}
-              minimumTrackTintColor='#111000'
-              maximumTrackTintColor='#000000'
+              minimumTrackTintColor={colors.primary}
+              maximumTrackTintColor={colors.white}
               onSlidingStart={slidingStarted}
               onSlidingComplete={slidingCompleted}
-              thumbTintColor='#000'
+              thumbTintColor={colors.primary}
             />
             <Text style={styles.timer}>
-              {secondsToTime(item.voice_duration)}
+              {position
+                ? secondsToTime(position)
+                : secondsToTime(item.voice_duration)}
             </Text>
           </View>
         </View>
@@ -191,9 +176,6 @@ const styles = StyleSheet.create({
     width: '0%',
     height: 5,
   },
-  icon: {
-    // width: 30,
-  },
   timer: {
     color: colors.medium,
     marginVertical: 5,
@@ -211,12 +193,6 @@ const styles = StyleSheet.create({
   slideUsername: {
     color: colors.medium,
     fontWeight: 'bold',
-  },
-  progressBar: {
-    // height: 20,
-    // paddingBottom: 90,
-    // width: 100,
-    // width: 315,
   },
 })
 

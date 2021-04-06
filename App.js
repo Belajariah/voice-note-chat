@@ -27,7 +27,6 @@ const App = () => {
   const [playTime, setPlayTime] = useState('')
   const [duration, setDuration] = useState('0')
   const [isPlaying, setIsPlaying] = useState(false)
-
   const [showSendButton, setShowSendButton] = useState(false)
   const [showRecording, setShowRecording] = useState(false)
   const [showHandleAudio, setShowHandleAudio] = useState(false)
@@ -190,7 +189,7 @@ const App = () => {
                         }
                       }}>
                       <Icon
-                        name={isPlaying ? 'pause' : 'play'}
+                        name={isPlaying ? 'pause-circle' : 'play-circle'}
                         size={30}
                         color={colors.dark}
                       />
